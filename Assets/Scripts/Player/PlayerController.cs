@@ -24,6 +24,9 @@ public class PlayerController : MonoBehaviour
     /// <summary>Normalised direction the player last moved in.</summary>
     public Vector2 FacingDirection { get; private set; } = Vector2.down;
 
+    /// <summary>True when the player is providing movement input.</summary>
+    public bool IsMoving => _moveInput.sqrMagnitude > 0.01f;
+
     Rigidbody2D _rb;
     InputAction _moveAction;
     InputAction _sprintAction;
