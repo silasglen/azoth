@@ -1114,8 +1114,8 @@ namespace Battle
         }
 
         /// <summary>
-        /// Player uses a skill. Costs 1 AP. Does NOT end the turn.
-        /// Player can still take another action if AP remains.
+        /// Player uses a skill. ALWAYS ends the turn immediately
+        /// regardless of remaining AP (same as Attack).
         /// </summary>
         public void SelectSkill(int skillIndex, IBattleUnit target)
         {
@@ -1168,7 +1168,11 @@ namespace Battle
             }
 
             ExecuteSkillEffect(skill, caster, resolvedTarget);
-            ConsumeActionPoints(1);
+
+            // Skill ALWAYS ends the turn — set AP to 0 regardless of how much was remaining
+            _currentActionPoints = 0;
+            OnActionPointsChanged?.Invoke(0);
+            EndPlayerInput();
         }
 
         /// <summary>
@@ -1263,7 +1267,8 @@ namespace Battle
         }
 
         /// <summary>
-        /// Player chooses to Block. Costs ALL remaining AP. Sets defensive stance to Blocking.
+        /// Player chooses to Block. Costs 1 AP. Sets defensive stance to Blocking.
+        /// Does NOT end the turn — player can still act with remaining AP.
         /// Cannot be chosen if already in a defensive stance this turn.
         /// Block: 99% chance to reduce damage to 1% (100% / 0% with shield).
         /// Bypassed entirely by unblockable attacks.
@@ -1279,15 +1284,12 @@ namespace Battle
 
             OnPlayerActionSelected?.Invoke(PlayerAction.Block, null);
             SetPlayerStance(DefensiveStance.Blocking);
-
-            // Consumes ALL remaining AP — player is committing to defense for this turn
-            _currentActionPoints = 0;
-            OnActionPointsChanged?.Invoke(0);
-            EndPlayerInput();
+            ConsumeActionPoints(1);
         }
 
         /// <summary>
-        /// Player chooses to Dodge. Costs ALL remaining AP. Sets defensive stance to Dodging.
+        /// Player chooses to Dodge. Costs 1 AP. Sets defensive stance to Dodging.
+        /// Does NOT end the turn — player can still act with remaining AP.
         /// Cannot be chosen if already in a defensive stance this turn.
         /// Dodge: 75% base chance (increased by gear, capped at 95%).
         /// CAN avoid unblockable attacks (unlike Block).
@@ -1303,11 +1305,7 @@ namespace Battle
 
             OnPlayerActionSelected?.Invoke(PlayerAction.Dodge, null);
             SetPlayerStance(DefensiveStance.Dodging);
-
-            // Consumes ALL remaining AP — player is committing to defense for this turn
-            _currentActionPoints = 0;
-            OnActionPointsChanged?.Invoke(0);
-            EndPlayerInput();
+            ConsumeActionPoints(1);
         }
 
         #endregion
@@ -1397,7 +1395,6 @@ namespace Battle
 
         /// <summary>
         /// Returns the AP cost for a given action. UI can display this on buttons.
-        /// Note: Block and Dodge consume ALL remaining AP, but require at least 1.
         /// </summary>
         public int GetActionPointCost(PlayerAction action)
         {
@@ -1406,8 +1403,8 @@ namespace Battle
                 case PlayerAction.Attack: return 1;
                 case PlayerAction.Skill:  return 1;
                 case PlayerAction.Item:   return 1;
-                case PlayerAction.Block:  return _currentActionPoints; // All remaining
-                case PlayerAction.Dodge:  return _currentActionPoints; // All remaining
+                case PlayerAction.Block:  return 1;
+                case PlayerAction.Dodge:  return 1;
                 case PlayerAction.Scan:   return 1;
                 case PlayerAction.Flee:  return _currentActionPoints; // All remaining
                 default: return 0;
