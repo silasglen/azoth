@@ -8026,8 +8026,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TilemapProximityFade
   _wallsTilemap: {fileID: 1218971316}
   _player: {fileID: 0}
-  _fadeRadius: 1.5
-  _fadedAlpha: 0.25
+  _fadeRadius: 0.25
+  _fadedAlpha: 0.75
   _edgeSoftness: 1
   _useOverlapDetection: 0
 --- !u!1 &1329880787
